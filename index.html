@@ -3,260 +3,347 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ambient Clock</title>
+<title>Art Frame</title>
 <style>
-  :root {
-    --text: #e6f4f1;
-    --accent: #5ad1c3;
-    --shift-x: 0px;
-    --shift-y: 0px;
-  }
   html, body {
     margin: 0;
     height: 100%;
     overflow: hidden;
-    background: #05080d;
+    background: #e9e6e0;
     cursor: none;
     -webkit-user-select: none;
     user-select: none;
   }
   body {
     font-family: "SamsungOne", "Samsung Sans", "Tizen Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
-    color: var(--text);
-    transition: color 30s ease;
   }
 
-  /* Two full-bleed theme layers that crossfade; each one drifts slowly. */
-  .layer {
+  /* ---------- slides ---------- */
+  .slide {
     position: fixed;
-    top: -12%; left: -12%; width: 124%; height: 124%;
+    top: 0; left: 0; right: 0; bottom: 0;
     opacity: 0;
-    transition: opacity 45s ease-in-out;
-    will-change: opacity, transform;
-    animation: drift 140s ease-in-out infinite alternate;
+    transition: opacity 3.5s ease-in-out;
+    will-change: opacity;
+    overflow: hidden;
   }
-  .layer.on { opacity: 1; }
-  .layer.b { animation-duration: 170s; animation-direction: alternate-reverse; }
-  @keyframes drift {
-    0%   { transform: translate3d(-3%, -2%, 0) scale(1.00) rotate(0deg); }
-    50%  { transform: translate3d(2%, 3%, 0)   scale(1.06) rotate(1.5deg); }
-    100% { transform: translate3d(4%, -3%, 0)  scale(1.02) rotate(-1deg); }
+  .slide.on { opacity: 1; }
+
+  /* matte paper grain, rendered once and tiled */
+  .grain {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 256px 256px;
   }
 
-  /* Soft vignette keeps the edges calm and the text readable. */
-  .vignette {
-    position: fixed; inset: 0;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%);
+  /* matted presentation: the art sits recessed behind a bevel-cut mat */
+  .slide.mat .grain { opacity: 0.07; }
+  .slide.mat .art {
+    position: absolute;
+  }
+  .slide.mat .art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .slide.mat .art::before {
+    /* the bevel of the mat opening */
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--bevel-w)); left: calc(-1 * var(--bevel-w));
+    right: calc(-1 * var(--bevel-w)); bottom: calc(-1 * var(--bevel-w));
+    background: var(--bevel);
+    box-shadow: 0 0 0 1px var(--bevel-edge);
+    z-index: -1;
+  }
+  .slide.mat .art::after {
+    /* depth: the mat casts a soft shadow onto the art below it */
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    box-shadow:
+      inset 0.22vmin 0.32vmin 0.7vmin rgba(0,0,0,0.42),
+      inset 0 0 0.25vmin rgba(0,0,0,0.30);
+    pointer-events: none;
+  }
+  .slide .art-grain {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.045;
     pointer-events: none;
   }
 
-  .stage {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    transform: translate3d(var(--shift-x), var(--shift-y), 0);
-    transition: transform 20s ease-in-out;
-    text-shadow: 0 0.4vw 3vw rgba(0,0,0,0.35);
+  /* full-bleed presentation for artworks close to the screen's shape */
+  .slide.fill { background: #000; }
+  .slide.fill .art {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
   }
-  .time {
-    display: flex; align-items: flex-start;
-    font-size: min(24vw, 46vh);
-    font-weight: 200;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-  .ampm {
-    font-size: 0.16em;
-    font-weight: 300;
-    letter-spacing: 0.12em;
-    margin: 1em 0 0 0.25em;
-    opacity: 0.7;
-  }
-  .seconds {
-    width: min(46vw, 88vh);
-    height: 0.35vh;
-    margin-top: 2.2vh;
-    background: rgba(255,255,255,0.10);
-    border-radius: 1vh;
-    overflow: hidden;
-  }
-  .seconds > div {
+  .slide.fill .art img {
     width: 100%; height: 100%;
-    background: var(--accent);
-    opacity: 0.75;
-    transform-origin: left center;
-    transform: scaleX(0);
-    transition: transform 1s linear, background-color 30s ease;
-    will-change: transform;
+    object-fit: cover;
   }
-  .date {
-    margin-top: 3.4vh;
-    font-size: min(2.6vw, 5vh);
-    font-weight: 300;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    opacity: 0.78;
-  }
-  .theme-name {
-    position: fixed; right: 4vw; bottom: 5vh;
-    font-size: min(1.2vw, 2.4vh);
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
+  .slide.fill .grain { opacity: 0.05; }
+
+  /* museum-style label */
+  .label {
+    position: absolute;
+    text-align: center;
+    left: 0; right: 0;
+    font-size: min(1.15vw, 2.1vh);
+    line-height: 1.45;
+    letter-spacing: 0.02em;
     opacity: 0;
-    transition: opacity 6s ease;
+    transition: opacity 4s ease;
   }
-  .theme-name.show { opacity: 0.55; }
+  .label.show { opacity: 1; }
+  .label .artist { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.86em; }
+  .label .work { font-style: italic; opacity: 0.85; }
+  .slide.fill .label {
+    left: 3.2vw; right: auto; bottom: 4.5vh;
+    text-align: left;
+    padding: 1.4vh 1.6vw;
+    border-radius: 0.6vh;
+    background: rgba(12,12,12,0.45);
+    color: #f3f0ea;
+  }
+
+  /* frame depth at the screen edge + night dimmer */
+  .edge {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    box-shadow: inset 0 0 2.6vmin rgba(0,0,0,0.30);
+    pointer-events: none;
+  }
+  .dim {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    opacity: 0;
+    transition: opacity 60s linear;
+    pointer-events: none;
+  }
   .hint {
-    position: fixed; left: 50%; bottom: 6vh;
+    position: fixed; left: 50%; top: 2.5vh;
     transform: translateX(-50%);
     padding: 1.1vh 2vw;
     border-radius: 99px;
-    background: rgba(0,0,0,0.35);
-    font-size: min(1.3vw, 2.6vh);
-    letter-spacing: 0.08em;
+    background: rgba(0,0,0,0.5);
+    color: #f3f0ea;
+    font-size: min(1.25vw, 2.4vh);
+    letter-spacing: 0.06em;
     opacity: 0;
     transition: opacity 2s ease;
   }
-  .hint.show { opacity: 0.85; }
+  .hint.show { opacity: 0.9; }
 </style>
 </head>
 <body>
-  <div class="layer a" id="layerA"></div>
-  <div class="layer b" id="layerB"></div>
-  <div class="vignette"></div>
-
-  <main class="stage" id="stage">
-    <div class="time"><span id="hm">--:--</span><span class="ampm" id="ampm"></span></div>
-    <div class="seconds"><div id="sec"></div></div>
-    <div class="date" id="date"></div>
-  </main>
-
-  <div class="theme-name" id="themeName"></div>
+  <div id="slides"></div>
+  <div class="edge"></div>
+  <div class="dim" id="dim"></div>
   <div class="hint" id="hint">Press OK on the remote for full screen</div>
 
+<script src="art.js"></script>
 <script>
 (function () {
-  var HOLD_MS = 6 * 60 * 1000;      // how long each theme stays before fading to the next
-  var SHIFT_EVERY_MS = 60 * 1000;   // nudge the clock a little each minute
+  var ART = window.ART || [];
+  var BUILD = window.ART_BUILD || "";
 
-  // Each theme: deep base, two soft glows, a text tint and an accent.
-  var THEMES = [
-    { name: "Midnight Ocean", base: "#04121f", g1: "rgba(15,76,117,0.85)",  p1: "18% 28%", g2: "rgba(27,153,139,0.60)", p2: "82% 72%", text: "#e6f4f1", accent: "#5ad1c3" },
-    { name: "Aurora",         base: "#050d18", g1: "rgba(31,171,137,0.70)", p1: "25% 18%", g2: "rgba(108,63,181,0.70)", p2: "76% 82%", text: "#eafff5", accent: "#7cf2c4" },
-    { name: "Dusk",           base: "#140d24", g1: "rgba(249,115,98,0.62)", p1: "70% 86%", g2: "rgba(91,62,168,0.80)",  p2: "18% 18%", text: "#fff0f3", accent: "#ffb3a7" },
-    { name: "Ember",          base: "#1a0805", g1: "rgba(194,65,12,0.72)",  p1: "28% 78%", g2: "rgba(124,29,58,0.75)",  p2: "82% 22%", text: "#fff1e6", accent: "#ffb38a" },
-    { name: "Saffron",        base: "#1b1206", g1: "rgba(217,154,30,0.55)", p1: "75% 30%", g2: "rgba(138,59,18,0.75)",  p2: "20% 80%", text: "#fff8e7", accent: "#ffd47a" },
-    { name: "Forest",         base: "#07140c", g1: "rgba(47,107,58,0.85)",  p1: "20% 72%", g2: "rgba(163,179,58,0.40)", p2: "84% 24%", text: "#f0f7e8", accent: "#c8e07a" },
-    { name: "Rose Quartz",    base: "#1c0f17", g1: "rgba(181,72,122,0.65)", p1: "80% 70%", g2: "rgba(232,168,124,0.45)", p2: "22% 25%", text: "#fff2f6", accent: "#ffc2d6" },
-    { name: "Glacier",        base: "#0a1420", g1: "rgba(91,141,184,0.70)", p1: "30% 30%", g2: "rgba(185,215,234,0.30)", p2: "78% 78%", text: "#f2f8fc", accent: "#a8d8f0" }
-  ];
+  // ---- options (all optional URL params) ----
+  var params = {};
+  location.search.replace(/^\?/, "").split("&").forEach(function (kv) {
+    if (!kv) return;
+    var p = kv.split("=");
+    params[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || "");
+  });
+  var EVERY_MIN = Math.max(1, parseFloat(params.every) || 10);   // minutes per artwork
+  var NIGHT_DIM = params.night !== "0";                           // dim 11pm-6am
+  var LABELS = params.label !== "0";                              // show caption on change
+  var LABEL_MS = 40 * 1000;
+
+  var MATS = {
+    white:    { bg: "#ebe8e2", bevel: "#f7f5f0", edge: "rgba(0,0,0,0.10)", ink: "#3b3833" },
+    linen:    { bg: "#e3dbcd", bevel: "#f2ede4", edge: "rgba(0,0,0,0.10)", ink: "#463f35" },
+    charcoal: { bg: "#2a2825", bevel: "#3d3a36", edge: "rgba(0,0,0,0.35)", ink: "#d9d4cb" },
+    night:    { bg: "#1c222a", bevel: "#2f3742", edge: "rgba(0,0,0,0.35)", ink: "#d3d9e0" }
+  };
 
   var $ = function (id) { return document.getElementById(id); };
-  var layers = [$("layerA"), $("layerB")];
-  var front = 0;
-  var themeIndex = Math.floor(Date.now() / HOLD_MS) % THEMES.length;
-  var themeTimer = null;
-  var nameTimer = null;
+  var host = $("slides");
+  var current = null;
+  var timer = null;
+  var labelTimer = null;
 
-  function paint(el, t) {
-    el.style.backgroundColor = t.base;
-    el.style.backgroundImage =
-      "radial-gradient(circle at " + t.p1 + ", " + t.g1 + " 0%, rgba(0,0,0,0) 55%)," +
-      "radial-gradient(circle at " + t.p2 + ", " + t.g2 + " 0%, rgba(0,0,0,0) 60%)," +
-      "linear-gradient(160deg, rgba(255,255,255,0.04), rgba(0,0,0,0.25))";
+  // ---- shuffled deck that survives reloads ----
+  function store(k, v) {
+    try {
+      if (v === undefined) return JSON.parse(localStorage.getItem(k));
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch (e) { return null; }
+  }
+  function shuffled(n) {
+    var a = [];
+    for (var i = 0; i < n; i++) a.push(i);
+    for (var j = n - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var t = a[j]; a[j] = a[k]; a[k] = t;
+    }
+    return a;
+  }
+  var deck = store("artframe.deck");
+  if (!deck || !deck.order || deck.order.length !== ART.length || deck.build !== BUILD) {
+    deck = { order: shuffled(ART.length), pos: 0, build: BUILD };
+  }
+  function advance(dir) {
+    deck.pos += dir;
+    if (deck.pos >= deck.order.length) {
+      var last = deck.order[deck.order.length - 1];
+      deck.order = shuffled(ART.length);
+      if (deck.order[0] === last && deck.order.length > 1) deck.order.push(deck.order.shift());
+      deck.pos = 0;
+    }
+    if (deck.pos < 0) deck.pos = deck.order.length - 1;
+    store("artframe.deck", deck);
+    return ART[deck.order[deck.pos]];
   }
 
-  function applyTheme(i, instant) {
-    var t = THEMES[i];
-    var next = layers[1 - front];
-    paint(next, t);
-    if (instant) {
-      next.style.transition = "none";
-      layers[front].style.transition = "none";
-    }
-    next.classList.add("on");
-    layers[front].classList.remove("on");
-    if (instant) {
-      void next.offsetWidth;   // commit before re-enabling transitions
-      next.style.transition = "";
-      layers[front].style.transition = "";
-    }
-    front = 1 - front;
-
-    var bar = $("sec");
-    if (instant) {
-      document.body.style.transition = "none";
-      bar.style.transition = "none";
-    }
-    document.documentElement.style.setProperty("--text", t.text);
-    document.documentElement.style.setProperty("--accent", t.accent);
-    if (instant) {
-      void document.body.offsetWidth;
-      document.body.style.transition = "";
-      bar.style.transition = "";
-    }
-
-    var label = $("themeName");
-    label.textContent = t.name;
-    label.classList.add("show");
-    clearTimeout(nameTimer);
-    nameTimer = setTimeout(function () { label.classList.remove("show"); }, 12000);
+  // ---- layout ----
+  function fitBox(item) {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var ar = item.w / item.h;
+    var maxW = vw * (ar > 2 ? 0.86 : 0.74);
+    var maxH = vh * (ar < 0.85 ? 0.76 : 0.72);
+    var w = maxW, h = w / ar;
+    if (h > maxH) { h = maxH; w = h * ar; }
+    // keep the art optically a touch above center, like a hung picture
+    var left = (vw - w) / 2;
+    var top = (vh - h) / 2 - vh * 0.025;
+    return { w: Math.round(w), h: Math.round(h), left: Math.round(left), top: Math.round(top) };
   }
 
-  function scheduleThemes() {
-    clearInterval(themeTimer);
-    themeTimer = setInterval(function () { step(1); }, HOLD_MS);
+  function layout(slide) {
+    if (!slide || !slide.item || slide.item.fit === "fill") return;
+    var b = fitBox(slide.item);
+    var art = slide.querySelector(".art");
+    art.style.width = b.w + "px";
+    art.style.height = b.h + "px";
+    art.style.left = b.left + "px";
+    art.style.top = b.top + "px";
+    var label = slide.querySelector(".label");
+    label.style.top = (b.top + b.h + Math.max(window.innerHeight * 0.03, 18)) + "px";
   }
 
-  function step(dir) {
-    themeIndex = (themeIndex + dir + THEMES.length) % THEMES.length;
-    applyTheme(themeIndex, false);
-  }
+  function buildSlide(item, img) {
+    var s = document.createElement("div");
+    s.className = "slide " + (item.fit === "fill" ? "fill" : "mat");
+    s.item = item;
+    var art = document.createElement("div");
+    art.className = "art";
+    art.appendChild(img);
+    var artGrain = document.createElement("div");
+    artGrain.className = "grain art-grain";
+    art.appendChild(artGrain);
 
-  // ---- clock ----
-  var lastMinute = -1;
-  function pad(n) { return n < 10 ? "0" + n : "" + n; }
-  var DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-
-  function tick() {
-    var now = new Date();
-    var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-    if (m !== lastMinute) {
-      lastMinute = m;
-      var h12 = h % 12 === 0 ? 12 : h % 12;
-      $("hm").textContent = h12 + ":" + pad(m);
-      $("ampm").textContent = h < 12 ? "AM" : "PM";
-      $("date").textContent = DAYS[now.getDay()] + ", " + MONTHS[now.getMonth()] + " " + now.getDate();
+    if (item.fit !== "fill") {
+      var m = MATS[item.mat] || MATS.white;
+      s.style.backgroundColor = m.bg;
+      s.style.setProperty("--bevel", m.bevel);
+      s.style.setProperty("--bevel-edge", m.edge);
+      s.style.setProperty("--bevel-w", "0.55vmin");
+      s.style.color = m.ink;
+      var paper = document.createElement("div");
+      paper.className = "grain";
+      s.appendChild(paper);
     }
-    var bar = $("sec");
-    if (s === 0) {
-      // snap back without animating the bar backwards
-      bar.style.transition = "none";
-      bar.style.transform = "scaleX(0)";
-      void bar.offsetWidth;
-      bar.style.transition = "";
-    } else {
-      bar.style.transform = "scaleX(" + (s / 59) + ")";
-    }
-    // line up the next tick with the top of the next second
-    setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+    s.appendChild(art);
+
+    var label = document.createElement("div");
+    label.className = "label";
+    var a = document.createElement("div");
+    a.className = "artist";
+    a.textContent = item.artist;
+    var w = document.createElement("div");
+    w.className = "work";
+    w.textContent = item.title + (item.date ? ", " + item.date : "");
+    label.appendChild(a);
+    label.appendChild(w);
+    s.appendChild(label);
+    return s;
   }
 
-  // Small, slow position shift so nothing sits on the same pixels for hours.
-  function nudge() {
-    var x = (Math.random() * 2 - 1) * 1.6;   // vw
-    var y = (Math.random() * 2 - 1) * 2.2;   // vh
-    var root = document.documentElement.style;
-    root.setProperty("--shift-x", x.toFixed(2) + "vw");
-    root.setProperty("--shift-y", y.toFixed(2) + "vh");
+  function showLabel(slide) {
+    if (!LABELS || !slide) return;
+    var label = slide.querySelector(".label");
+    clearTimeout(labelTimer);
+    setTimeout(function () { label.classList.add("show"); }, 2500);
+    labelTimer = setTimeout(function () { label.classList.remove("show"); }, LABEL_MS);
+  }
+
+  // ---- show an artwork (preloads fully before the crossfade) ----
+  var busy = false;
+  function show(item, attempts) {
+    if (busy || !item) return;
+    busy = true;
+    attempts = attempts || 0;
+    var img = new Image();
+    img.alt = item.title;
+    img.onload = function () {
+      var go = function () {
+        var s = buildSlide(item, img);
+        host.appendChild(s);
+        layout(s);
+        void s.offsetWidth;
+        s.classList.add("on");
+        if (current) {
+          var old = current;
+          old.classList.remove("on");
+          setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 4000);
+        }
+        current = s;
+        document.body.style.background = (item.fit === "fill") ? "#000" : (MATS[item.mat] || MATS.white).bg;
+        showLabel(s);
+        busy = false;
+      };
+      if (img.decode) img.decode().then(go, go); else go();
+    };
+    img.onerror = function () {
+      busy = false;
+      if (attempts < 5) show(advance(1), attempts + 1);
+    };
+    img.src = item.src;
+  }
+
+  function schedule() {
+    clearInterval(timer);
+    timer = setInterval(function () { show(advance(1)); }, EVERY_MIN * 60 * 1000);
+  }
+
+  // ---- night dimming ----
+  function updateDim() {
+    var h = new Date().getHours();
+    var night = NIGHT_DIM && (h >= 23 || h < 6);
+    $("dim").style.opacity = night ? "0.32" : "0";
+  }
+
+  // ---- self-update: reload when a new version is published, and once a day ----
+  var started = Date.now();
+  function checkVersion() {
+    if (!window.fetch) return;
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (v) { if (v && v.build && BUILD && v.build !== BUILD) location.reload(); })
+      .catch(function () {});
+  }
+  function dailyRefresh() {
+    var h = new Date().getHours();
+    if (h === 4 && Date.now() - started > 6 * 3600 * 1000) location.reload();
   }
 
   // ---- full screen + remote keys ----
-  function isFull() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
+  function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
   function goFull() {
     var el = document.documentElement;
     var req = el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen;
@@ -265,26 +352,19 @@
     }
     $("hint").classList.remove("show");
   }
-  function canFull() {
-    var el = document.documentElement;
-    return !!(el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen);
-  }
-
-  document.addEventListener("click", goFull);
+  document.addEventListener("click", function () { goFull(); showLabel(current); });
   document.addEventListener("keydown", function (e) {
-    var k = e.key || "";
-    var c = e.keyCode;
-    if (k === "Enter" || c === 13) { goFull(); }
-    else if (k === "ArrowRight" || c === 39) { step(1); scheduleThemes(); }
-    else if (k === "ArrowLeft" || c === 37) { step(-1); scheduleThemes(); }
+    var c = e.keyCode, k = e.key || "";
+    if (k === "Enter" || c === 13) { goFull(); showLabel(current); }
+    else if (k === "ArrowRight" || c === 39) { show(advance(1)); schedule(); }
+    else if (k === "ArrowLeft" || c === 37) { show(advance(-1)); schedule(); }
+    else if (k === "ArrowUp" || k === "ArrowDown" || c === 38 || c === 40) { showLabel(current); }
   });
+  window.addEventListener("resize", function () { layout(current); });
 
-  // Ask the browser to keep the screen awake where supported.
   function keepAwake() {
     try {
-      if (navigator.wakeLock && navigator.wakeLock.request) {
-        navigator.wakeLock.request("screen").catch(function () {});
-      }
+      if (navigator.wakeLock && navigator.wakeLock.request) navigator.wakeLock.request("screen").catch(function () {});
     } catch (e) {}
   }
   document.addEventListener("visibilitychange", function () {
@@ -292,16 +372,23 @@
   });
 
   // ---- start ----
-  applyTheme(themeIndex, true);
-  scheduleThemes();
-  tick();
-  nudge();
-  setInterval(nudge, SHIFT_EVERY_MS);
+  if (!ART.length) return;
+  var pick = parseInt(params.i, 10);   // ?i=N shows a specific artwork first (for testing)
+  if (pick >= 0 && pick < ART.length) {
+    deck.pos = deck.order.indexOf(pick);
+  }
+  show(ART[deck.order[deck.pos]]);
+  schedule();
+  updateDim();
+  setInterval(updateDim, 60 * 1000);
+  setInterval(checkVersion, 30 * 60 * 1000);
+  setInterval(dailyRefresh, 30 * 60 * 1000);
   keepAwake();
 
-  if (canFull() && !isFull()) {
+  var el = document.documentElement;
+  if ((el.requestFullscreen || el.webkitRequestFullscreen) && !isFull()) {
     $("hint").classList.add("show");
-    setTimeout(function () { $("hint").classList.remove("show"); }, 15000);
+    setTimeout(function () { $("hint").classList.remove("show"); }, 12000);
   }
 })();
 </script>
