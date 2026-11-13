@@ -146,6 +146,31 @@
     transition: opacity 2s ease;
   }
   .hint.show { opacity: 0.9; }
+
+  /* border picker, shown on OK in full screen */
+  .bsel {
+    position: fixed; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 2.4vh 2.8vw;
+    border-radius: 1.2vh;
+    background: rgba(14,14,14,0.74);
+    color: #f3f0ea;
+    text-align: center;
+    font-size: min(1.7vw, 3.1vh);
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .bsel.show { opacity: 1; }
+  .bsel .steps { margin-top: 1.4vh; display: flex; justify-content: center; }
+  .bsel .steps span {
+    width: 1.2vh; height: 1.2vh; margin: 0 0.45vw;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.28);
+  }
+  .bsel .steps span.on { background: #fff; }
+  .bsel .tip { margin-top: 1.3vh; font-size: 0.6em; opacity: 0.75; }
 </style>
 </head>
 <body>
@@ -153,10 +178,15 @@
   <div class="edge"></div>
   <div class="dim" id="dim"></div>
   <div class="hint" id="hint">Press OK on the remote for full screen</div>
+  <div class="bsel" id="bsel">
+    <div id="bselName"></div>
+    <div class="steps" id="bselSteps"></div>
+    <div class="tip">Press OK again to change</div>
+  </div>
 
 <script src="art.js"></script>
 <script>
-window.ARTFRAME_PAGE = 3;   // bump when page code changes; art.js can require a minimum
+window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a minimum
 (function () {
   var ART = window.ART || [];
   var BUILD = window.ART_BUILD || "";
@@ -174,9 +204,14 @@ window.ARTFRAME_PAGE = 3;   // bump when page code changes; art.js can require a
   var LABEL_MS = 40 * 1000;
   // how much of the screen height the art may use inside the mat (60-98%, default 86%)
   var SIZE = Math.min(98, Math.max(60, parseFloat(params.size) || 86)) / 100;
-  // thin mat around screen-shaped art: width of each side as % of screen height (0 = edge to edge)
+  // thin mat around screen-shaped art: width of each side as % of screen height (0 = edge to edge).
+  // Chosen with the remote (OK in full screen) and remembered on this TV; ?border= overrides.
+  var DEFAULT_BORDER = 8;
+  var BORDERS = [0, 2, 4, 6, 8, 10, 12];
+  var savedBorder = store("artframe.border");
   var BORDER = (params.border !== undefined && params.border !== "")
-    ? Math.min(15, Math.max(0, parseFloat(params.border) || 0)) : 4.5;
+    ? Math.min(15, Math.max(0, parseFloat(params.border) || 0))
+    : (typeof savedBorder === "number" ? savedBorder : DEFAULT_BORDER);
 
   var MATS = {
     white:    { bg: "#ebe8e2", bevel: "#f7f5f0", edge: "rgba(0,0,0,0.10)", ink: "#3b3833" },
@@ -318,8 +353,10 @@ window.ARTFRAME_PAGE = 3;   // bump when page code changes; art.js can require a
 
   // ---- show an artwork (preloads fully before the crossfade) ----
   var busy = false;
-  function show(item, attempts) {
-    if (busy || !item) return;
+  var pendingRerender = false;
+  function show(item, attempts, fast) {
+    if (!item) return;
+    if (busy) { if (fast) pendingRerender = true; return; }
     busy = true;
     attempts = attempts || 0;
     var img = new Image();
@@ -327,19 +364,22 @@ window.ARTFRAME_PAGE = 3;   // bump when page code changes; art.js can require a
     img.onload = function () {
       var go = function () {
         var s = buildSlide(item, img);
+        if (fast) s.style.transition = "opacity 0.5s ease";
         host.appendChild(s);
         layout(s);
         void s.offsetWidth;
         s.classList.add("on");
         if (current) {
           var old = current;
+          if (fast) old.style.transition = "opacity 0.5s ease";
           old.classList.remove("on");
           setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 4000);
         }
         current = s;
         document.body.style.background = s.matted ? (MATS[item.mat] || MATS.white).bg : "#000";
-        showLabel(s);
+        if (!fast) showLabel(s);
         busy = false;
+        if (pendingRerender) { pendingRerender = false; rerender(); }
       };
       if (img.decode) img.decode().then(go, go); else go();
     };
@@ -405,13 +445,61 @@ window.ARTFRAME_PAGE = 3;   // bump when page code changes; art.js can require a
     }
     $("hint").classList.remove("show");
   }
-  document.addEventListener("click", function () { goFull(); showLabel(current); });
+  // ---- border picker ----
+  var bselTimer = null;
+  function borderIndex() {
+    var best = 0;
+    for (var i = 1; i < BORDERS.length; i++) {
+      if (Math.abs(BORDERS[i] - BORDER) < Math.abs(BORDERS[best] - BORDER)) best = i;
+    }
+    return best;
+  }
+  function showBorderPanel() {
+    var idx = borderIndex();
+    var v = BORDERS[idx];
+    $("bselName").textContent = "Border: " + (v === 0 ? "none" : v) + (v === DEFAULT_BORDER ? " (default)" : "");
+    var steps = $("bselSteps");
+    steps.innerHTML = "";
+    for (var i = 0; i < BORDERS.length; i++) {
+      var dot = document.createElement("span");
+      if (i === idx) dot.className = "on";
+      steps.appendChild(dot);
+    }
+    $("bsel").classList.add("show");
+    clearTimeout(bselTimer);
+    bselTimer = setTimeout(function () { $("bsel").classList.remove("show"); }, 4500);
+  }
+  function rerender() { if (current && current.item) show(current.item, 0, true); }
+  function stepBorder(dir, wrap) {
+    var idx = borderIndex() + dir;
+    if (wrap) idx = (idx + BORDERS.length) % BORDERS.length;
+    else idx = Math.max(0, Math.min(BORDERS.length - 1, idx));
+    BORDER = BORDERS[idx];
+    store("artframe.border", BORDER);
+    rerender();
+    showBorderPanel();
+  }
+
+  // One OK press can arrive as both a keydown and a click, so presses within 400 ms count once.
+  // Not full screen: OK goes full screen. Full screen: OK shows the border picker; OK again steps it.
+  var lastOK = 0;
+  function onOK() {
+    var now = Date.now();
+    if (now - lastOK < 400) return;
+    lastOK = now;
+    var el = document.documentElement;
+    var canFull = !!(el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen);
+    if (canFull && !isFull()) { goFull(); showLabel(current); return; }
+    if ($("bsel").classList.contains("show")) stepBorder(1, true); else showBorderPanel();
+  }
+  document.addEventListener("click", onOK);
   document.addEventListener("keydown", function (e) {
     var c = e.keyCode, k = e.key || "";
-    if (k === "Enter" || c === 13) { goFull(); showLabel(current); }
+    if (k === "Enter" || c === 13) { onOK(); }
     else if (k === "ArrowRight" || c === 39) { show(advance(1)); schedule(); }
     else if (k === "ArrowLeft" || c === 37) { show(advance(-1)); schedule(); }
-    else if (k === "ArrowUp" || k === "ArrowDown" || c === 38 || c === 40) { showLabel(current); }
+    else if (k === "ArrowUp" || c === 38) { stepBorder(1, false); }
+    else if (k === "ArrowDown" || c === 40) { stepBorder(-1, false); }
   });
   window.addEventListener("resize", function () { layout(current); });
 
