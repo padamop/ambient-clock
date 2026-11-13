@@ -3,7 +3,7 @@
  * The app sets window.ARTFRAME_APP = true and window.ARTFRAME_BASE to this site's URL before
  * loading this file, and may provide window.MY_PHOTOS (kept inside the app, never on the site).
  */
-window.ARTFRAME_PAGE = 6;   // bump with PAGE_MIN in build_manifest.py when this code changes
+window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this code changes
 
 (function () {
   "use strict";
@@ -59,8 +59,18 @@ window.ARTFRAME_PAGE = 6;   // bump with PAGE_MIN in build_manifest.py when this
   if (params.label === "0") OVERRIDE.labels = false;
   if (params.night === "0") OVERRIDE.nightDim = false;
 
-  function get(k) { return has(OVERRIDE, k) ? OVERRIDE[k] : S[k]; }
-  function set(k, v) { S[k] = v; delete OVERRIDE[k]; save("artframe.settings", S); }
+  function get(k) {
+    if (has(OVERRIDE, k)) return OVERRIDE[k];
+    // with personal photos and no collection picked yet, show art and photos together
+    if (k === "collection" && !S.collectionChosen && PHOTOS && PHOTOS.length) return "everything";
+    return S[k];
+  }
+  function set(k, v) {
+    S[k] = v;
+    if (k === "collection") S.collectionChosen = true;
+    delete OVERRIDE[k];
+    save("artframe.settings", S);
+  }
 
   // ---------------------------------------------------------------- artwork + photos
   var ART = window.ART || [];
@@ -251,7 +261,7 @@ window.ARTFRAME_PAGE = 6;   // bump with PAGE_MIN in build_manifest.py when this
     sep.textContent = "·";
     var w = document.createElement("span");
     w.className = "work";
-    w.textContent = it.title + (it.date ? ", " + it.date : "");
+    w.textContent = [it.title, it.date].filter(function (x) { return x; }).join(", ");
     label.appendChild(a);
     if (it.title || it.date) { label.appendChild(sep); label.appendChild(w); }
     s.appendChild(label);
@@ -471,7 +481,7 @@ window.ARTFRAME_PAGE = 6;   // bump with PAGE_MIN in build_manifest.py when this
       : "Click ‹ › to change &nbsp;·&nbsp; click the art to close") + '</div>';
     var m = $("menu");
     m.innerHTML = html;
-    m.querySelector(".t").textContent = it.title || "";
+    m.querySelector(".t").textContent = it.title || (it.c === "photos" ? "Photo" : "");
     m.querySelector(".a").textContent = it.artist || "";
     m.querySelector(".d").textContent = [it.date, it.m, it.c ? collection(it.c === "photos" ? "photos" : it.c).name : ""]
       .filter(function (x) { return x; }).join(" · ");

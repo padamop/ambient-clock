@@ -1,6 +1,6 @@
 // Public-domain artworks (CC0) from the Art Institute of Chicago and the Cleveland Museum of Art. Generated file.
-window.ART_BUILD = "20261113161441";
-window.ART_PAGE_MIN = 6;
+window.ART_BUILD = "20261113165053";
+window.ART_PAGE_MIN = 7;
 window.ART = [
 {
 "src": "art/01-landscape-near-chiusi-tuscany.jpg",
