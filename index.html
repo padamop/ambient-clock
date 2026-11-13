@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ambient Clock</title>
+<style>
+  :root {
+    --text: #e6f4f1;
+    --accent: #5ad1c3;
+    --shift-x: 0px;
+    --shift-y: 0px;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #05080d;
+    cursor: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  body {
+    font-family: "SamsungOne", "Samsung Sans", "Tizen Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    color: var(--text);
+    transition: color 30s ease;
+  }
+
+  /* Two full-bleed theme layers that crossfade; each one drifts slowly. */
+  .layer {
+    position: fixed;
+    top: -12%; left: -12%; width: 124%; height: 124%;
+    opacity: 0;
+    transition: opacity 45s ease-in-out;
+    will-change: opacity, transform;
+    animation: drift 140s ease-in-out infinite alternate;
+  }
+  .layer.on { opacity: 1; }
+  .layer.b { animation-duration: 170s; animation-direction: alternate-reverse; }
+  @keyframes drift {
+    0%   { transform: translate3d(-3%, -2%, 0) scale(1.00) rotate(0deg); }
+    50%  { transform: translate3d(2%, 3%, 0)   scale(1.06) rotate(1.5deg); }
+    100% { transform: translate3d(4%, -3%, 0)  scale(1.02) rotate(-1deg); }
+  }
+
+  /* Soft vignette keeps the edges calm and the text readable. */
+  .vignette {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+  }
+
+  .stage {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transform: translate3d(var(--shift-x), var(--shift-y), 0);
+    transition: transform 20s ease-in-out;
+    text-shadow: 0 0.4vw 3vw rgba(0,0,0,0.35);
+  }
+  .time {
+    display: flex; align-items: flex-start;
+    font-size: min(24vw, 46vh);
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .ampm {
+    font-size: 0.16em;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    margin: 1em 0 0 0.25em;
+    opacity: 0.7;
+  }
+  .seconds {
+    width: min(46vw, 88vh);
+    height: 0.35vh;
+    margin-top: 2.2vh;
+    background: rgba(255,255,255,0.10);
+    border-radius: 1vh;
+    overflow: hidden;
+  }
+  .seconds > div {
+    width: 100%; height: 100%;
+    background: var(--accent);
+    opacity: 0.75;
+    transform-origin: left center;
+    transform: scaleX(0);
+    transition: transform 1s linear, background-color 30s ease;
+    will-change: transform;
+  }
+  .date {
+    margin-top: 3.4vh;
+    font-size: min(2.6vw, 5vh);
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.78;
+  }
+  .theme-name {
+    position: fixed; right: 4vw; bottom: 5vh;
+    font-size: min(1.2vw, 2.4vh);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 6s ease;
+  }
+  .theme-name.show { opacity: 0.55; }
+  .hint {
+    position: fixed; left: 50%; bottom: 6vh;
+    transform: translateX(-50%);
+    padding: 1.1vh 2vw;
+    border-radius: 99px;
+    background: rgba(0,0,0,0.35);
+    font-size: min(1.3vw, 2.6vh);
+    letter-spacing: 0.08em;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+  .hint.show { opacity: 0.85; }
+</style>
+</head>
+<body>
+  <div class="layer a" id="layerA"></div>
+  <div class="layer b" id="layerB"></div>
+  <div class="vignette"></div>
+
+  <main class="stage" id="stage">
+    <div class="time"><span id="hm">--:--</span><span class="ampm" id="ampm"></span></div>
+    <div class="seconds"><div id="sec"></div></div>
+    <div class="date" id="date"></div>
+  </main>
+
+  <div class="theme-name" id="themeName"></div>
+  <div class="hint" id="hint">Press OK on the remote for full screen</div>
+
+<script>
+(function () {
+  var HOLD_MS = 6 * 60 * 1000;      // how long each theme stays before fading to the next
+  var SHIFT_EVERY_MS = 60 * 1000;   // nudge the clock a little each minute
+
+  // Each theme: deep base, two soft glows, a text tint and an accent.
+  var THEMES = [
+    { name: "Midnight Ocean", base: "#04121f", g1: "rgba(15,76,117,0.85)",  p1: "18% 28%", g2: "rgba(27,153,139,0.60)", p2: "82% 72%", text: "#e6f4f1", accent: "#5ad1c3" },
+    { name: "Aurora",         base: "#050d18", g1: "rgba(31,171,137,0.70)", p1: "25% 18%", g2: "rgba(108,63,181,0.70)", p2: "76% 82%", text: "#eafff5", accent: "#7cf2c4" },
+    { name: "Dusk",           base: "#140d24", g1: "rgba(249,115,98,0.62)", p1: "70% 86%", g2: "rgba(91,62,168,0.80)",  p2: "18% 18%", text: "#fff0f3", accent: "#ffb3a7" },
+    { name: "Ember",          base: "#1a0805", g1: "rgba(194,65,12,0.72)",  p1: "28% 78%", g2: "rgba(124,29,58,0.75)",  p2: "82% 22%", text: "#fff1e6", accent: "#ffb38a" },
+    { name: "Saffron",        base: "#1b1206", g1: "rgba(217,154,30,0.55)", p1: "75% 30%", g2: "rgba(138,59,18,0.75)",  p2: "20% 80%", text: "#fff8e7", accent: "#ffd47a" },
+    { name: "Forest",         base: "#07140c", g1: "rgba(47,107,58,0.85)",  p1: "20% 72%", g2: "rgba(163,179,58,0.40)", p2: "84% 24%", text: "#f0f7e8", accent: "#c8e07a" },
+    { name: "Rose Quartz",    base: "#1c0f17", g1: "rgba(181,72,122,0.65)", p1: "80% 70%", g2: "rgba(232,168,124,0.45)", p2: "22% 25%", text: "#fff2f6", accent: "#ffc2d6" },
+    { name: "Glacier",        base: "#0a1420", g1: "rgba(91,141,184,0.70)", p1: "30% 30%", g2: "rgba(185,215,234,0.30)", p2: "78% 78%", text: "#f2f8fc", accent: "#a8d8f0" }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var layers = [$("layerA"), $("layerB")];
+  var front = 0;
+  var themeIndex = Math.floor(Date.now() / HOLD_MS) % THEMES.length;
+  var themeTimer = null;
+  var nameTimer = null;
+
+  function paint(el, t) {
+    el.style.backgroundColor = t.base;
+    el.style.backgroundImage =
+      "radial-gradient(circle at " + t.p1 + ", " + t.g1 + " 0%, rgba(0,0,0,0) 55%)," +
+      "radial-gradient(circle at " + t.p2 + ", " + t.g2 + " 0%, rgba(0,0,0,0) 60%)," +
+      "linear-gradient(160deg, rgba(255,255,255,0.04), rgba(0,0,0,0.25))";
+  }
+
+  function applyTheme(i, instant) {
+    var t = THEMES[i];
+    var next = layers[1 - front];
+    paint(next, t);
+    if (instant) {
+      next.style.transition = "none";
+      layers[front].style.transition = "none";
+    }
+    next.classList.add("on");
+    layers[front].classList.remove("on");
+    if (instant) {
+      void next.offsetWidth;   // commit before re-enabling transitions
+      next.style.transition = "";
+      layers[front].style.transition = "";
+    }
+    front = 1 - front;
+
+    var bar = $("sec");
+    if (instant) {
+      document.body.style.transition = "none";
+      bar.style.transition = "none";
+    }
+    document.documentElement.style.setProperty("--text", t.text);
+    document.documentElement.style.setProperty("--accent", t.accent);
+    if (instant) {
+      void document.body.offsetWidth;
+      document.body.style.transition = "";
+      bar.style.transition = "";
+    }
+
+    var label = $("themeName");
+    label.textContent = t.name;
+    label.classList.add("show");
+    clearTimeout(nameTimer);
+    nameTimer = setTimeout(function () { label.classList.remove("show"); }, 12000);
+  }
+
+  function scheduleThemes() {
+    clearInterval(themeTimer);
+    themeTimer = setInterval(function () { step(1); }, HOLD_MS);
+  }
+
+  function step(dir) {
+    themeIndex = (themeIndex + dir + THEMES.length) % THEMES.length;
+    applyTheme(themeIndex, false);
+  }
+
+  // ---- clock ----
+  var lastMinute = -1;
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  var DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  function tick() {
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+    if (m !== lastMinute) {
+      lastMinute = m;
+      var h12 = h % 12 === 0 ? 12 : h % 12;
+      $("hm").textContent = h12 + ":" + pad(m);
+      $("ampm").textContent = h < 12 ? "AM" : "PM";
+      $("date").textContent = DAYS[now.getDay()] + ", " + MONTHS[now.getMonth()] + " " + now.getDate();
+    }
+    var bar = $("sec");
+    if (s === 0) {
+      // snap back without animating the bar backwards
+      bar.style.transition = "none";
+      bar.style.transform = "scaleX(0)";
+      void bar.offsetWidth;
+      bar.style.transition = "";
+    } else {
+      bar.style.transform = "scaleX(" + (s / 59) + ")";
+    }
+    // line up the next tick with the top of the next second
+    setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+  }
+
+  // Small, slow position shift so nothing sits on the same pixels for hours.
+  function nudge() {
+    var x = (Math.random() * 2 - 1) * 1.6;   // vw
+    var y = (Math.random() * 2 - 1) * 2.2;   // vh
+    var root = document.documentElement.style;
+    root.setProperty("--shift-x", x.toFixed(2) + "vw");
+    root.setProperty("--shift-y", y.toFixed(2) + "vh");
+  }
+
+  // ---- full screen + remote keys ----
+  function isFull() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+  function goFull() {
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen;
+    if (req && !isFull()) {
+      try { var p = req.call(el); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+    }
+    $("hint").classList.remove("show");
+  }
+  function canFull() {
+    var el = document.documentElement;
+    return !!(el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen);
+  }
+
+  document.addEventListener("click", goFull);
+  document.addEventListener("keydown", function (e) {
+    var k = e.key || "";
+    var c = e.keyCode;
+    if (k === "Enter" || c === 13) { goFull(); }
+    else if (k === "ArrowRight" || c === 39) { step(1); scheduleThemes(); }
+    else if (k === "ArrowLeft" || c === 37) { step(-1); scheduleThemes(); }
+  });
+
+  // Ask the browser to keep the screen awake where supported.
+  function keepAwake() {
+    try {
+      if (navigator.wakeLock && navigator.wakeLock.request) {
+        navigator.wakeLock.request("screen").catch(function () {});
+      }
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") keepAwake();
+  });
+
+  // ---- start ----
+  applyTheme(themeIndex, true);
+  scheduleThemes();
+  tick();
+  nudge();
+  setInterval(nudge, SHIFT_EVERY_MS);
+  keepAwake();
+
+  if (canFull() && !isFull()) {
+    $("hint").classList.add("show");
+    setTimeout(function () { $("hint").classList.remove("show"); }, 15000);
+  }
+})();
+</script>
+</body>
+</html>
