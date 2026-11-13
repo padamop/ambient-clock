@@ -1,6 +1,6 @@
 # Art Frame
 
-A full-screen art display for a TV web browser. Every artwork in the collection already has roughly the TV's 16:9 shape, so each one fills the screen edge to edge with at most a few percent cropped.
+A full-screen art display for a TV web browser. Every artwork in the collection already has roughly the TV's 16:9 shape. Each one fills the screen inside a slim, even mat with a beveled edge, with at most a few percent cropped.
 
 Live page: https://padamop.github.io/ambient-clock/
 
@@ -15,6 +15,7 @@ Optional URL settings, which can be combined:
 
 | Setting | Effect |
 | --- | --- |
+| `?border=3` | mat width on each side, as % of screen height (default 4.5; `0` = edge to edge) |
 | `?every=30` | minutes per artwork (default 10) |
 | `?night=0` | turn off the late-night dimming |
 | `?label=0` | never show the caption |

@@ -1,5 +1,6 @@
-// Public-domain artworks from the Art Institute of Chicago (CC0). Generated file.
-window.ART_BUILD = "20261113151722";
+// Public-domain artworks (CC0) from the Art Institute of Chicago and the Cleveland Museum of Art. Generated file.
+window.ART_BUILD = "20261113152623";
+window.ART_PAGE_MIN = 3;
 window.ART = [
 {
 "src": "art/01-landscape-near-chiusi-tuscany.jpg",
@@ -742,3 +743,9 @@ window.ART = [
 "mat": "linen"
 }
 ];
+(function () {
+  if (document.readyState === "complete" && (window.ARTFRAME_PAGE || 0) < window.ART_PAGE_MIN) {
+    var q = location.search.replace(/([?&])v=[^&]*&?/, "$1").replace(/[?&]$/, "");
+    location.replace(location.pathname + (q ? q + "&" : "?") + "v=" + window.ART_BUILD);
+  }
+})();

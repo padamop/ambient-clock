@@ -47,6 +47,7 @@
     display: block;
     width: 100%;
     height: 100%;
+    object-fit: cover;
   }
   .slide.mat .art::before {
     /* the bevel of the mat opening */
@@ -155,6 +156,7 @@
 
 <script src="art.js"></script>
 <script>
+window.ARTFRAME_PAGE = 3;   // bump when page code changes; art.js can require a minimum
 (function () {
   var ART = window.ART || [];
   var BUILD = window.ART_BUILD || "";
@@ -172,6 +174,9 @@
   var LABEL_MS = 40 * 1000;
   // how much of the screen height the art may use inside the mat (60-98%, default 86%)
   var SIZE = Math.min(98, Math.max(60, parseFloat(params.size) || 86)) / 100;
+  // thin mat around screen-shaped art: width of each side as % of screen height (0 = edge to edge)
+  var BORDER = (params.border !== undefined && params.border !== "")
+    ? Math.min(15, Math.max(0, parseFloat(params.border) || 0)) : 4.5;
 
   var MATS = {
     white:    { bg: "#ebe8e2", bevel: "#f7f5f0", edge: "rgba(0,0,0,0.10)", ink: "#3b3833" },
@@ -233,9 +238,16 @@
   }
 
   function layout(slide) {
-    if (!slide || !slide.item || slide.item.fit === "fill") return;
-    var vh = window.innerHeight;
-    var b = fitBox(slide.item);
+    if (!slide || !slide.item || !slide.matted) return;
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var b;
+    if (slide.item.fit === "fill") {
+      // even border on all sides; the art fills the opening (cropping a sliver if needed)
+      var p = Math.round(vh * BORDER / 100);
+      b = { left: p, top: p, w: vw - 2 * p, h: vh - 2 * p };
+    } else {
+      b = fitBox(slide.item);
+    }
     var art = slide.querySelector(".art");
     art.style.width = b.w + "px";
     art.style.height = b.h + "px";
@@ -243,7 +255,7 @@
     art.style.top = b.top + "px";
     var label = slide.querySelector(".label");
     var below = vh - (b.top + b.h);
-    if (below >= vh * 0.045) {
+    if (below >= vh * 0.035) {
       label.classList.remove("card");
       label.style.top = (b.top + b.h + below / 2) + "px";
     } else {
@@ -254,8 +266,10 @@
 
   function buildSlide(item, img) {
     var s = document.createElement("div");
-    s.className = "slide " + (item.fit === "fill" ? "fill" : "mat");
+    var matted = item.fit !== "fill" || BORDER > 0;
+    s.className = "slide " + (matted ? "mat" : "fill");
     s.item = item;
+    s.matted = matted;
     var art = document.createElement("div");
     art.className = "art";
     art.appendChild(img);
@@ -263,7 +277,7 @@
     artGrain.className = "grain art-grain";
     art.appendChild(artGrain);
 
-    if (item.fit !== "fill") {
+    if (matted) {
       var m = MATS[item.mat] || MATS.white;
       s.style.backgroundColor = m.bg;
       s.style.setProperty("--bevel", m.bevel);
@@ -323,7 +337,7 @@
           setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 4000);
         }
         current = s;
-        document.body.style.background = (item.fit === "fill") ? "#000" : (MATS[item.mat] || MATS.white).bg;
+        document.body.style.background = s.matted ? (MATS[item.mat] || MATS.white).bg : "#000";
         showLabel(s);
         busy = false;
       };
@@ -351,6 +365,11 @@
   // ---- self-update when a new version is published ----
   // A reload would drop out of full screen, so in full screen only the art list is swapped in;
   // page changes apply the next time the page is opened (or right away when not full screen).
+  // reload with a cache-busting ?v= so the browser can't hand back a stale page
+  function freshReload(build) {
+    var q = location.search.replace(/([?&])v=[^&]*&?/, "$1").replace(/[?&]$/, "");
+    location.replace(location.pathname + (q ? q + "&" : "?") + "v=" + encodeURIComponent(build));
+  }
   function swapArt(build) {
     var s = document.createElement("script");
     s.src = "art.js?v=" + encodeURIComponent(build);
@@ -371,7 +390,7 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (v) {
         if (!v || !v.build || !BUILD || v.build === BUILD) return;
-        if (isFull()) swapArt(v.build); else location.reload();
+        if (isFull()) swapArt(v.build); else freshReload(v.build);
       })
       .catch(function () {});
   }
