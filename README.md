@@ -8,13 +8,14 @@ Live page: https://padamop.github.io/ambient-clock/
 - A new artwork crossfades in every 10 minutes. The order is shuffled and doesn't repeat until every piece has been shown.
 - A small museum label appears for 40 seconds after each change.
 - The screen dims slightly from 11pm to 6am.
-- The page reloads itself when a new version is published here.
+- New versions published here are picked up automatically (without leaving full screen).
 - Press OK on the remote (or click) to go full screen. Left and right step through artworks if the browser passes the arrow keys through.
 
 Optional URL settings, which can be combined:
 
 | Setting | Effect |
 | --- | --- |
+| `?size=92` | how much of the screen height matted art may fill, 60–98 (default 86) |
 | `?every=30` | minutes per artwork (default 10) |
 | `?night=0` | turn off the late-night dimming |
 | `?label=0` | never show the caption |
