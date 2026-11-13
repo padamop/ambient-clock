@@ -1,5 +1,5 @@
 // Public-domain artworks from the Art Institute of Chicago (CC0). Generated file.
-window.ART_BUILD = "20261113144225";
+window.ART_BUILD = "20261113145243";
 window.ART = [
 {
 "src": "art/01-a-sunday-on-la-grande-jatte-1884.jpg",
