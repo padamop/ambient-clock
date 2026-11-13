@@ -3,7 +3,7 @@
  * The app sets window.ARTFRAME_APP = true and window.ARTFRAME_BASE to this site's URL before
  * loading this file, and may provide window.MY_PHOTOS (kept inside the app, never on the site).
  */
-window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this code changes
+window.ARTFRAME_PAGE = 8;   // bump with PAGE_MIN in build_manifest.py when this code changes
 
 (function () {
   "use strict";
@@ -38,8 +38,9 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
   // ---------------------------------------------------------------- settings
   var DEFAULTS = {
     border: 8, mat: "auto", style: "flat", brightness: 100, tone: 0,
+    finish: "matte", texture: "subtle",
     every: 10, order: "shuffle", collection: "all",
-    offFrom: -1, onAt: 7, nightDim: true, labels: true
+    offFrom: -1, onAt: 7, nightDim: true, labels: true   // nightDim = "Evening light" (follows the time of day)
   };
   var S = load("artframe.settings", {});
   var legacyBorder = load("artframe.border", null);
@@ -58,6 +59,9 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
   if (params.every) OVERRIDE.every = Math.max(1, parseFloat(params.every) || 10);
   if (params.label === "0") OVERRIDE.labels = false;
   if (params.night === "0") OVERRIDE.nightDim = false;
+  if (/^(off|subtle|strong)$/.test(params.tex || "")) OVERRIDE.texture = params.tex;
+  if (params.matte === "0") OVERRIDE.finish = "glossy";
+  var HOUR = params.hour ? parseFloat(params.hour) : NaN;   // pretend it's this hour (testing)
 
   function get(k) {
     if (has(OVERRIDE, k)) return OVERRIDE[k];
@@ -226,18 +230,25 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
     }
   }
 
+  // the surface the work is on, for its texture: canvas, panel (wood) or paper; photos get none
+  function surfaceOf(it) { return it.c === "photos" ? "" : (it.s || "canvas"); }
+
   function buildSlide(it, img) {
     var s = document.createElement("div");
     var matted = it.fit !== "fill" || get("border") > 0;
-    s.className = "slide " + (matted ? "mat" : "fill") + (matted && get("style") === "shadowbox" ? " shadowbox" : "");
+    var tex = get("texture");
+    s.className = "slide " + (matted ? "mat" : "fill") + (matted && get("style") === "shadowbox" ? " shadowbox" : "") +
+      (get("finish") === "matte" ? " matte" : "") + (tex !== "off" ? " t-" + tex : "");
     s.item = it;
     s.matted = matted;
     var art = document.createElement("div");
     art.className = "art";
     art.appendChild(img);
-    var artGrain = document.createElement("div");
-    artGrain.className = "grain art-grain";
-    art.appendChild(artGrain);
+    if (tex !== "off" && surfaceOf(it)) {   // canvas weave / wood gesso / paper tooth over the artwork
+      var surf = document.createElement("div");
+      surf.className = "tex " + surfaceOf(it);
+      art.appendChild(surf);
+    }
     if (matted) {
       var m = matFor(it);
       s.style.backgroundColor = m.bg;
@@ -245,9 +256,11 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
       s.style.setProperty("--bevel-edge", m.edge);
       s.style.setProperty("--bevel-w", get("style") === "shadowbox" ? "0.9vmin" : "0.55vmin");
       s.style.color = m.ink;
-      var paper = document.createElement("div");
-      paper.className = "grain";
-      s.appendChild(paper);
+      if (tex !== "off") {                 // mat board texture
+        var board = document.createElement("div");
+        board.className = "tex board";
+        s.appendChild(board);
+      }
     }
     s.appendChild(art);
 
@@ -333,15 +346,38 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
     }, get("every") * 60 * 1000);
   }
 
-  // ---------------------------------------------------------------- brightness, tone, night dim
-  var TONES = { "-2": "#d3e1ff", "-1": "#e7eeff", "1": "#fff0dc", "2": "#ffe1bd" };
-  function nightHours() { var h = new Date().getHours(); return h >= 23 || h < 6; }
+  // ---------------------------------------------------------------- brightness, tone, evening light
+  // Color tone is a multiply layer: cool tints cut red, warm tints cut blue.
+  var TONE_RGB = { "-2": [211, 225, 255], "-1": [231, 238, 255], "0": [255, 255, 255], "1": [255, 240, 220], "2": [255, 225, 189] };
+  // "Evening light": The Frame dims and warms its art as the room gets darker and lamps come on.
+  // This TV has no light sensor the app can read, so follow the clock instead:
+  // [hour, brightness factor, extra warmth]; straight lines between the points.
+  var DAY = [[0, 0.66, 1], [6, 0.66, 1], [7.5, 1, 0], [17.5, 1, 0], [20, 0.86, 0.6], [22.5, 0.7, 1], [24, 0.66, 1]];
+  function hourNow() {
+    if (!isNaN(HOUR)) return HOUR;
+    var d = new Date();
+    return d.getHours() + d.getMinutes() / 60;
+  }
+  function dayLight(h) {
+    for (var i = 1; i < DAY.length; i++) {
+      if (h <= DAY[i][0]) {
+        var a = DAY[i - 1], b = DAY[i], f = (h - a[0]) / (b[0] - a[0]);
+        return { level: a[1] + (b[1] - a[1]) * f, warm: a[2] + (b[2] - a[2]) * f };
+      }
+    }
+    return { level: 1, warm: 0 };
+  }
   function updateOverlays() {
-    var level = (get("brightness") / 100) * (get("nightDim") && nightHours() ? 0.68 : 1);
+    var d = get("nightDim") ? dayLight(hourNow()) : { level: 1, warm: 0 };
+    var level = (get("brightness") / 100) * d.level;
     $("dim").style.opacity = (1 - level).toFixed(3);
-    var t = String(get("tone"));
-    if (TONES[t]) { $("tone").style.backgroundColor = TONES[t]; $("tone").style.opacity = "1"; }
-    else { $("tone").style.opacity = "0"; }
+    var w = Math.max(-2, Math.min(2, get("tone") + d.warm));
+    if (Math.abs(w) < 0.05) { $("tone").style.opacity = "0"; return; }
+    var lo = Math.floor(w), hi = Math.ceil(w), f = w - lo;
+    var A = TONE_RGB[String(lo)], B = TONE_RGB[String(hi)];
+    var rgb = [0, 1, 2].map(function (k) { return Math.round(A[k] + (B[k] - A[k]) * f); });
+    $("tone").style.backgroundColor = "rgb(" + rgb.join(",") + ")";
+    $("tone").style.opacity = "1";
   }
 
   // ---------------------------------------------------------------- art hours (schedule)
@@ -403,11 +439,24 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
       vals: function () { return ["flat", "shadowbox"]; },
       fmt: function (v) { return v === "shadowbox" ? "Shadowbox" : "Flat"; } },
     { key: "brightness", name: "Brightness",
-      vals: function () { return [50, 60, 70, 80, 90, 100]; },
+      vals: function () { return [40, 50, 60, 70, 80, 90, 100]; },
       fmt: function (v) { return v + "%"; } },
     { key: "tone", name: "Color tone",
       vals: function () { return [-2, -1, 0, 1, 2]; },
       fmt: function (v) { return { "-2": "Cool 2", "-1": "Cool 1", "0": "Standard", "1": "Warm 1", "2": "Warm 2" }[String(v)]; } },
+    { key: "nightDim", name: "Evening light",
+      vals: function () { return [true, false]; },
+      fmt: function (v) { return v ? "Auto" : "Off"; } },
+    { key: "finish", name: "Matte finish",
+      vals: function () { return ["matte", "glossy"]; },
+      fmt: function (v) { return v === "matte" ? "On" : "Off"; } },
+    { key: "texture", name: "Texture",
+      vals: function () { return ["off", "subtle", "strong"]; },
+      fmt: function (v) {
+        if (v === "off") return "Off";
+        var surf = surfaceOf(currentItem() || {});
+        return (v === "strong" ? "Strong" : "Subtle") + (surf ? " · " + surf : "");
+      } },
     { key: "every", name: "Change every",
       vals: function () { return [3, 10, 30, 60, 360, 1440]; },
       fmt: function (v) { return v < 60 ? v + " min" : (v < 1440 ? (v / 60) + (v === 60 ? " hour" : " hours") : "1 day"); } },
@@ -420,9 +469,6 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
     { key: "onAt", name: "Screen on at",
       vals: function () { return [5, 6, 7, 8, 9, 10]; },
       fmt: hourName },
-    { key: "nightDim", name: "Dim 11 PM–6 AM",
-      vals: function () { return [true, false]; },
-      fmt: function (v) { return v ? "On" : "Off"; } },
     { key: "labels", name: "Show labels",
       vals: function () { return [true, false]; },
       fmt: function (v) { return v ? "On" : "Off"; } }
@@ -455,7 +501,7 @@ window.ARTFRAME_PAGE = 7;   // bump with PAGE_MIN in build_manifest.py when this
       return;
     }
     set(key, v);
-    if (key === "border" || key === "mat" || key === "style") rerender();
+    if (key === "border" || key === "mat" || key === "style" || key === "finish" || key === "texture") rerender();
     else if (key === "brightness" || key === "tone" || key === "nightDim") updateOverlays();
     else if (key === "every") schedule();
     else if (key === "offFrom" || key === "onAt") { wokeUntil = 0; updateSleep(); }

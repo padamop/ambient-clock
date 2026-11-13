@@ -1,6 +1,6 @@
 // Public-domain artworks (CC0) from the Art Institute of Chicago and the Cleveland Museum of Art. Generated file.
-window.ART_BUILD = "20261113165053";
-window.ART_PAGE_MIN = 7;
+window.ART_BUILD = "20261113181728";
+window.ART_PAGE_MIN = 8;
 window.ART = [
 {
 "src": "art/01-landscape-near-chiusi-tuscany.jpg",
@@ -12,7 +12,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/02-view-of-pirna-with-the-fortress-of-sonne.jpg",
@@ -24,7 +25,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "cities",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/03-the-banks-of-the-marne-in-winter.jpg",
@@ -36,7 +38,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/04-the-marsh.jpg",
@@ -48,7 +51,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "panel"
 },
 {
 "src": "art/05-stacks-of-wheat-end-of-summer.jpg",
@@ -60,7 +64,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/06-autumn-river-scene-the-brook.jpg",
@@ -72,7 +77,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/07-nantasket-beach.jpg",
@@ -84,7 +90,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/08-on-the-nile.jpg",
@@ -96,7 +103,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/09-the-garden-of-palazzo-contarini-dal-zaff.jpg",
@@ -108,7 +116,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "cities",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/10-the-grand-canal-venice.jpg",
@@ -120,7 +129,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "cities",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/11-landscape-with-a-herdsman-and-goats.jpg",
@@ -132,7 +142,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/12-flower-girl-in-holland.jpg",
@@ -144,7 +155,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "people",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/13-landscape-sunset.jpg",
@@ -156,7 +168,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/14-oil-sketch-for-a-sunday-on-la-grande-jat.jpg",
@@ -168,7 +181,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "people",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "panel"
 },
 {
 "src": "art/15-cliffs-on-the-sea-coast-small-beach-sunr.jpg",
@@ -180,7 +194,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/16-sawmill-outskirts-of-paris.jpg",
@@ -192,7 +207,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/17-on-the-seine.jpg",
@@ -204,7 +220,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/18-coast-scene-bathers.jpg",
@@ -216,7 +233,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "panel"
 },
 {
 "src": "art/19-fishing-boats-off-an-estuary.jpg",
@@ -228,7 +246,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "panel"
 },
 {
 "src": "art/20-niagara-falls-in-winter.jpg",
@@ -240,7 +259,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/21-landscape.jpg",
@@ -252,7 +272,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/22-rocks-at-the-lighthouse-biarritz.jpg",
@@ -264,7 +285,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/23-the-church-of-overschie.jpg",
@@ -276,7 +298,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "cities",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/24-rocky-coast.jpg",
@@ -288,7 +311,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/25-magnolias-on-light-blue-velvet-cloth.jpg",
@@ -300,7 +324,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "still",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/26-still-life.jpg",
@@ -312,7 +337,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "still",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "panel"
 },
 {
 "src": "art/27-cows-in-a-pond-at-sunset.jpg",
@@ -324,7 +350,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/28-clouds-over-the-river-before-rain.jpg",
@@ -336,7 +363,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "ink",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "paper"
 },
 {
 "src": "art/29-view-of-saleve-near-geneva.jpg",
@@ -348,7 +376,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/30-the-schooner-jane-of-bath-maine.jpg",
@@ -360,7 +389,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/31-the-herring-net.jpg",
@@ -372,7 +402,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "sea",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/32-croquet-scene.jpg",
@@ -384,7 +415,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "people",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/33-the-races-at-longchamp.jpg",
@@ -396,7 +428,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "people",
-"m": "Art Institute of Chicago"
+"m": "Art Institute of Chicago",
+"s": "canvas"
 },
 {
 "src": "art/34-well-at-the-side-of-a-road.jpg",
@@ -408,7 +441,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/35-piazza-san-marco-venice.jpg",
@@ -420,7 +454,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "cities",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/36-the-hillsides-of-m-ry-sur-oise-opposite-.jpg",
@@ -432,7 +467,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "panel"
 },
 {
 "src": "art/37-sunset-on-the-river-oise.jpg",
@@ -444,7 +480,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "panel"
 },
 {
 "src": "art/38-village-festival.jpg",
@@ -456,7 +493,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "people",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/39-view-of-bordeaux-from-the-quai-des-chart.jpg",
@@ -468,7 +506,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/40-beach-scene.jpg",
@@ -480,7 +519,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "panel"
 },
 {
 "src": "art/41-evening-mood-liding.jpg",
@@ -492,7 +532,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/42-harbor-of-boston-with-the-city-in-the-di.jpg",
@@ -504,7 +545,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/43-an-october-day.jpg",
@@ -516,7 +558,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/44-attributes-of-music.jpg",
@@ -528,7 +571,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "still",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/45-corn-fields.jpg",
@@ -540,7 +584,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "panel"
 },
 {
 "src": "art/46-durham-connecticut.jpg",
@@ -552,7 +597,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/47-pine-shaded-monastery-on-a-cloudy-mounta.jpg",
@@ -564,7 +610,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "ink",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "paper"
 },
 {
 "src": "art/48-landscape-near-granby-connecticut.jpg",
@@ -576,7 +623,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/49-morning-in-new-england.jpg",
@@ -588,7 +636,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/50-mount-washington-new-hampshire.jpg",
@@ -600,7 +649,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/51-landscape.jpg",
@@ -612,7 +662,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/52-pond-at-ville-d-avray.jpg",
@@ -624,7 +675,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/53-leaving-the-oasis.jpg",
@@ -636,7 +688,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "people",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "panel"
 },
 {
 "src": "art/54-view-near-newport.jpg",
@@ -648,7 +701,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/55-storm-clouds.jpg",
@@ -660,7 +714,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/56-still-life-with-sweets.jpg",
@@ -672,7 +727,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "still",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/57-marshland.jpg",
@@ -684,7 +740,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/58-a-mountain-stream.jpg",
@@ -696,7 +753,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/59-landscape.jpg",
@@ -708,7 +766,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "ink",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "paper"
 },
 {
 "src": "art/60-point-judith-rhode-island.jpg",
@@ -720,7 +779,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/61-still-life-with-asparagus.jpg",
@@ -732,7 +792,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "still",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/62-an-estuary-scene-with-fisherman.jpg",
@@ -744,7 +805,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "panel"
 },
 {
 "src": "art/63-vale-of-kashmir.jpg",
@@ -756,7 +818,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/64-view-of-lake-pepin-minnesota.jpg",
@@ -768,7 +831,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/65-a-home-in-the-wilderness.jpg",
@@ -780,7 +844,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/66-view-of-schroon-mountain-essex-county-ne.jpg",
@@ -792,7 +857,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/67-view-of-florence.jpg",
@@ -804,7 +870,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "cities",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/68-labrador-coast.jpg",
@@ -816,7 +883,8 @@ window.ART = [
 "fit": "fill",
 "mat": "charcoal",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/69-early-morning-after-a-storm-at-sea.jpg",
@@ -828,7 +896,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/70-landscape-with-haywain.jpg",
@@ -840,7 +909,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/71-banks-of-the-seine.jpg",
@@ -852,7 +922,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "land",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/72-ducks-and-reeds.jpg",
@@ -864,7 +935,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "ink",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "paper"
 },
 {
 "src": "art/73-boats-at-berck-sur-mer.jpg",
@@ -876,7 +948,8 @@ window.ART = [
 "fit": "fill",
 "mat": "white",
 "c": "sea",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 },
 {
 "src": "art/74-caf-wepler.jpg",
@@ -888,7 +961,8 @@ window.ART = [
 "fit": "fill",
 "mat": "linen",
 "c": "cities",
-"m": "Cleveland Museum of Art"
+"m": "Cleveland Museum of Art",
+"s": "canvas"
 }
 ];
 (function () {

@@ -24,16 +24,25 @@ body.ptr, body.menu-open { cursor: default; }
 }
 .slide.on { opacity: 1; }
 
-.grain {
+/* Surface texture: 50%-gray tiles (tex/*.png, made by art-tools/make_textures.py) blended with soft-light,
+   so they add light and shade without changing the overall color. Drawn once with the slide (no per-frame cost). */
+.tex {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  background-size: 256px 256px;
+  mix-blend-mode: soft-light;
 }
-.slide.mat .grain { opacity: 0.07; }
-.slide.fill .grain { opacity: 0.05; }
-.slide .art-grain { opacity: 0.045; }
+.tex.canvas { background-image: url("tex/canvas.png"); }
+.tex.panel  { background-image: url("tex/panel.png"); }
+.tex.paper, .tex.board { background-image: url("tex/paper.png"); }
+.slide.t-subtle .art .tex { opacity: 0.5; }
+.slide.t-strong .art .tex { opacity: 0.95; }
+.slide.t-subtle .tex.board { opacity: 0.45; }
+.slide.t-strong .tex.board { opacity: 0.8; }
+
+/* Matte finish: like the Frame Pro's anti-glare matte panel, deep shadows read as paint, not as a hole
+   (blacks lifted to about 3%), whites unchanged. */
+.slide.matte .art img { filter: contrast(0.94) brightness(1.03); }
 
 .slide.mat .art { position: absolute; }
 .slide.mat .art img {
@@ -211,7 +220,7 @@ body.ptr, body.menu-open { cursor: default; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4.9vh;
+  height: 4.4vh;
   padding: 0 0.8vw;
   border-radius: 0.6vh;
 }
