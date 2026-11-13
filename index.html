@@ -171,6 +171,24 @@
   }
   .bsel .steps span.on { background: #fff; }
   .bsel .tip { margin-top: 1.3vh; font-size: 0.6em; opacity: 0.75; }
+
+  /* previous / next arrows: faint while the pointer is on that side, flash on change */
+  .nav {
+    position: fixed; top: 50%;
+    width: 8vh; height: 8vh; margin-top: -4vh;
+    border-radius: 50%;
+    background: rgba(12,12,12,0.42);
+    color: #fff;
+    font-size: 6vh; line-height: 7.2vh;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .nav.l { left: 2.4vw; }
+  .nav.r { right: 2.4vw; }
+  .nav.hover { opacity: 0.45; }
+  .nav.flash { opacity: 0.9; transition: none; }
 </style>
 </head>
 <body>
@@ -178,6 +196,8 @@
   <div class="edge"></div>
   <div class="dim" id="dim"></div>
   <div class="hint" id="hint">Press OK on the remote for full screen</div>
+  <div class="nav l" id="navL">&#8249;</div>
+  <div class="nav r" id="navR">&#8250;</div>
   <div class="bsel" id="bsel">
     <div id="bselName"></div>
     <div class="steps" id="bselSteps"></div>
@@ -186,7 +206,7 @@
 
 <script src="art.js"></script>
 <script>
-window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a minimum
+window.ARTFRAME_PAGE = 5;   // bump when page code changes; art.js can require a minimum
 (function () {
   var ART = window.ART || [];
   var BUILD = window.ART_BUILD || "";
@@ -354,30 +374,33 @@ window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a
   // ---- show an artwork (preloads fully before the crossfade) ----
   var busy = false;
   var pendingRerender = false;
-  function show(item, attempts, fast) {
+  // mode: undefined = slow ambient crossfade, "nav" = quicker fade for remote changes,
+  // "fast" = near-instant re-render of the same artwork (border changes)
+  function show(item, attempts, mode) {
     if (!item) return;
-    if (busy) { if (fast) pendingRerender = true; return; }
+    if (busy) { if (mode === "fast") pendingRerender = true; return; }
     busy = true;
     attempts = attempts || 0;
+    var dur = mode === "fast" ? "0.5s" : (mode === "nav" ? "1.2s" : "");
     var img = new Image();
     img.alt = item.title;
     img.onload = function () {
       var go = function () {
         var s = buildSlide(item, img);
-        if (fast) s.style.transition = "opacity 0.5s ease";
+        if (dur) s.style.transition = "opacity " + dur + " ease";
         host.appendChild(s);
         layout(s);
         void s.offsetWidth;
         s.classList.add("on");
         if (current) {
           var old = current;
-          if (fast) old.style.transition = "opacity 0.5s ease";
+          if (dur) old.style.transition = "opacity " + dur + " ease";
           old.classList.remove("on");
           setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 4000);
         }
         current = s;
         document.body.style.background = s.matted ? (MATS[item.mat] || MATS.white).bg : "#000";
-        if (!fast) showLabel(s);
+        if (mode !== "fast") showLabel(s);
         busy = false;
         if (pendingRerender) { pendingRerender = false; rerender(); }
       };
@@ -469,7 +492,7 @@ window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a
     clearTimeout(bselTimer);
     bselTimer = setTimeout(function () { $("bsel").classList.remove("show"); }, 4500);
   }
-  function rerender() { if (current && current.item) show(current.item, 0, true); }
+  function rerender() { if (current && current.item) show(current.item, 0, "fast"); }
   function stepBorder(dir, wrap) {
     var idx = borderIndex() + dir;
     if (wrap) idx = (idx + BORDERS.length) % BORDERS.length;
@@ -480,8 +503,71 @@ window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a
     showBorderPanel();
   }
 
+  // ---- previous / next with the remote ----
+  // The TV browser may deliver left/right as key presses, or (more likely) use them to move its
+  // on-screen pointer. Both are handled: keys directly; pointer moves as short sideways bursts.
+  // When the pointer is parked on the left/right side, OK also steps back/forward.
+  var ZONE = 0.22;                 // side zones, as a fraction of screen width
+  var lastNav = 0, lastKeyNav = 0, lastMove = 0, lastX = null, lastY = null;
+  var burst = { dx: 0, dy: 0, fired: false, timer: null };
+  var hoverTimer = null;
+
+  function flashArrow(dir) {
+    var el = $(dir > 0 ? "navR" : "navL");
+    el.classList.add("flash");
+    setTimeout(function () { el.classList.remove("flash"); }, 60);
+  }
+  function nav(dir, fromKey) {
+    var now = Date.now();
+    if (busy || now - lastNav < 350) return;
+    lastNav = now;
+    if (fromKey) lastKeyNav = now;
+    flashArrow(dir);
+    show(advance(dir), 0, "nav");
+    schedule();
+  }
+  function zoneAt(x) {
+    var w = window.innerWidth;
+    return x < w * ZONE ? -1 : (x > w * (1 - ZONE) ? 1 : 0);
+  }
+  function pointerZone() {
+    // only trust the pointer position if it moved recently (the TV hides an idle pointer)
+    if (lastX === null || Date.now() - lastMove > 4000) return 0;
+    return zoneAt(lastX);
+  }
+  function updateHover() {
+    var z = zoneAt(lastX);
+    $("navL").classList.toggle("hover", z < 0);
+    $("navR").classList.toggle("hover", z > 0);
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(function () {
+      $("navL").classList.remove("hover");
+      $("navR").classList.remove("hover");
+    }, 4000);
+  }
+  document.addEventListener("mousemove", function (e) {
+    var mx = e.movementX, my = e.movementY;
+    if (typeof mx !== "number" || (mx === 0 && my === 0 && lastX !== null)) {
+      mx = lastX === null ? 0 : e.clientX - lastX;
+      my = lastY === null ? 0 : e.clientY - lastY;
+    }
+    lastX = e.clientX; lastY = e.clientY;
+    if (!mx && !my) return;              // synthetic / zero moves
+    lastMove = Date.now();
+    updateHover();
+    burst.dx += mx; burst.dy += my;
+    clearTimeout(burst.timer);
+    burst.timer = setTimeout(function () { burst.dx = 0; burst.dy = 0; burst.fired = false; }, 250);
+    if (!burst.fired && Math.abs(burst.dx) >= 8 && Math.abs(burst.dx) > 2 * Math.abs(burst.dy)
+        && Date.now() - lastKeyNav > 600) {
+      burst.fired = true;               // one step per press; holding the button still counts once
+      nav(burst.dx > 0 ? 1 : -1, false);
+    }
+  });
+
   // One OK press can arrive as both a keydown and a click, so presses within 400 ms count once.
-  // Not full screen: OK goes full screen. Full screen: OK shows the border picker; OK again steps it.
+  // Not full screen: OK goes full screen. Full screen: OK on a side zone steps back/forward;
+  // elsewhere OK shows the border picker, and OK again steps it.
   var lastOK = 0;
   function onOK() {
     var now = Date.now();
@@ -490,14 +576,21 @@ window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a
     var el = document.documentElement;
     var canFull = !!(el.requestFullscreen || el.webkitRequestFullscreen || el.webkitRequestFullScreen);
     if (canFull && !isFull()) { goFull(); showLabel(current); return; }
+    var z = pointerZone();
+    if (z) {
+      lastMove = now;          // repeated OK presses on a side keep stepping
+      updateHover();
+      nav(z, false);
+      return;
+    }
     if ($("bsel").classList.contains("show")) stepBorder(1, true); else showBorderPanel();
   }
   document.addEventListener("click", onOK);
   document.addEventListener("keydown", function (e) {
     var c = e.keyCode, k = e.key || "";
     if (k === "Enter" || c === 13) { onOK(); }
-    else if (k === "ArrowRight" || c === 39) { show(advance(1)); schedule(); }
-    else if (k === "ArrowLeft" || c === 37) { show(advance(-1)); schedule(); }
+    else if (k === "ArrowRight" || c === 39 || k === "MediaFastForward" || k === "MediaTrackNext" || c === 417) { nav(1, true); }
+    else if (k === "ArrowLeft" || c === 37 || k === "MediaRewind" || k === "MediaTrackPrevious" || c === 412) { nav(-1, true); }
     else if (k === "ArrowUp" || c === 38) { stepBorder(1, false); }
     else if (k === "ArrowDown" || c === 40) { stepBorder(-1, false); }
   });
@@ -518,6 +611,7 @@ window.ARTFRAME_PAGE = 4;   // bump when page code changes; art.js can require a
   if (pick >= 0 && pick < ART.length) {
     deck.pos = deck.order.indexOf(pick);
   }
+  store("artframe.deck", deck);
   show(ART[deck.order[deck.pos]]);
   schedule();
   updateDim();

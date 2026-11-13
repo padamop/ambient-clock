@@ -9,7 +9,9 @@ Live page: https://padamop.github.io/ambient-clock/
 - A small museum label appears for 40 seconds after each change.
 - The screen dims slightly from 11pm to 6am.
 - New versions published here are picked up automatically (without leaving full screen).
-- Press OK on the remote (or click) to go full screen. In full screen, OK shows the border picker and pressing OK again steps through 0, 2, 4, 6, 8, 10 and 12 (the TV remembers the choice). Left and right step through artworks, and up and down change the border, if the browser passes the arrow keys through.
+- Press OK on the remote (or click) to go full screen.
+- **Changing artwork:** press left or right on the remote. If the TV browser uses those buttons to move its pointer, a short sideways move counts as one step back or forward. With the pointer on the left or right side of the screen (a faint ‹ or › appears), OK also steps back or forward. Rewind and fast-forward work too.
+- **Border:** in full screen, OK in the middle of the screen shows the border picker, and pressing OK again steps through 0, 2, 4, 6, 8, 10 and 12 (the TV remembers the choice). Up and down also change it if the browser passes them through.
 
 Optional URL settings, which can be combined:
 
